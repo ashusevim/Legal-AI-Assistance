@@ -2,13 +2,10 @@
 
 An AI-powered chatbot that provides legal information and guidance using Retrieval-Augmented Generation (RAG). Built with FastAPI, LangChain, ChromaDB, and React.
 
-> ⚠️ **Disclaimer**: This tool provides legal *information*, not legal *advice*. Users should always consult a qualified attorney for legal decisions.
-
 ---
 
 ## 📋 Table of Contents
 
-- [Team Structure](#team-structure)
 - [Architecture Overview](#architecture-overview)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
@@ -21,21 +18,6 @@ An AI-powered chatbot that provides legal information and guidance using Retriev
 - [Deployment](#deployment)
 - [Contributing Guidelines](#contributing-guidelines)
 - [Roadmap](#roadmap)
-
----
-
-## 👥 Team Structure
-
-| Role | Responsibilities |
-|------|-----------------|
-| **Person 1 — Backend & RAG Pipeline** | FastAPI server, RAG pipeline, LLM integration, document chunking & embedding |
-| **Person 2 — Frontend & UX** | React chat interface, conversation management, responsive design, disclaimer UI |
-| **Person 3 — Data & DevOps** | Legal data collection/processing, ingestion scripts, Docker setup, testing, CI/CD |
-
-### Communication
-- Use **GitHub Issues** for task tracking
-- Use **feature branches** and **pull requests** for all changes
-- Daily async standups (post what you did, what you'll do, blockers)
 
 ---
 
