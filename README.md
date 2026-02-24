@@ -1,11 +1,14 @@
 # ⚖️ Legal AI Assistance Chatbot
 
-An AI-powered chatbot that provides legal information and guidance using Retrieval-Augmented Generation (RAG). Built with FastAPI, LangChain, ChromaDB, and React.
+An AI-powered chatbot that provides legal information and guidance using Retrieval-Augmented Generation (RAG). Built with Spring Boot, LangChain4j, ChromaDB, and Angular.
+
+> ⚠️ **Disclaimer**: This tool provides legal *information*, not legal *advice*. Users should always consult a qualified attorney for legal decisions.
 
 ---
 
 ## 📋 Table of Contents
 
+- [Team Structure](#team-structure)
 - [Architecture Overview](#architecture-overview)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
@@ -21,28 +24,44 @@ An AI-powered chatbot that provides legal information and guidance using Retriev
 
 ---
 
+## 👥 Team Structure
+
+| Role | Responsibilities |
+|------|-----------------|
+| **Person 1 — Backend & RAG Pipeline** | Spring Boot server, RAG pipeline with LangChain4j, LLM integration, document chunking & embedding |
+| **Person 2 — Frontend & UX** | Angular chat interface, conversation management, responsive design, disclaimer UI, Angular Material |
+| **Person 3 — Data & DevOps** | Legal data collection/processing, ingestion service, Docker setup, testing, CI/CD |
+
+### Communication
+- Use **GitHub Issues** for task tracking
+- Use **feature branches** and **pull requests** for all changes
+- Daily async standups (post what you did, what you'll do, blockers)
+
+---
+
 ## 🏗️ Architecture Overview
 
 ```
-┌─────────────┐     ┌──────────────────────────────────────────────┐
-│   React UI  │────▶│  FastAPI Backend                             │
-│  (Frontend) │◀────│                                              │
-└─────────────┘     │  ┌─────────────┐    ┌─────────────────────┐  │
-                    │  │ Chat Router  │───▶│   RAG Service        │  │
-                    │  └─────────────┘    │                     │  │
-                    │                     │  1. Embed query      │  │
-                    │                     │  2. Search ChromaDB  │  │
-                    │                     │  3. Build prompt     │  │
-                    │                     │  4. Call LLM         │  │
-                    │                     │  5. Return + sources │  │
-                    │                     └──────────┬──────────┘  │
-                    │                                │              │
-                    │                     ┌──────────▼──────────┐  │
-                    │                     │  ChromaDB (Vectors)  │  │
-                    │                     └─────────────────────┘  │
-                    └──────────────────────────────────────────────┘
+┌──────────────────┐       ┌──────────────────────────────────────────────┐
+│  Angular Frontend │──────▶│  Spring Boot Backend                         │
+│  (Port 4200)      │◀──────│  (Port 8080)                                 │
+└──────────────────┘       │                                              │
+                           │  ┌────────────────┐  ┌────────────────────┐  │
+                           │  │ ChatController  │─▶│  RAGService        │  │
+                           │  └────────────────┘  │                    │  │
+                           │                      │  1. Embed query    │  │
+                           │                      │  2. Search ChromaDB│  │
+                           │                      │  3. Build prompt   │  │
+                           │                      │  4. Call LLM       │  │
+                           │                      │  5. Return+sources │  │
+                           │                      └────────┬───────────┘  │
+                           │                               │              │
+                           │                     ┌─────────▼───────────┐  │
+                           │                     │ ChromaDB (Vectors)  │  │
+                           │                     └─────────────────────┘  │
+                           └──────────────────────────────────────────────┘
 
-Legal Documents ──▶ Ingestion Script ──▶ Chunks ──▶ Embeddings ──▶ ChromaDB
+Legal Documents ──▶ Ingestion Service ──▶ Chunks ──▶ Embeddings ──▶ ChromaDB
 ```
 
 ---
@@ -51,16 +70,17 @@ Legal Documents ──▶ Ingestion Script ──▶ Chunks ──▶ Embeddings
 
 | Component | Technology | Purpose |
 |-----------|-----------|---------|
-| Backend | Python 3.11+, FastAPI | REST API server |
-| LLM Orchestration | LangChain | RAG pipeline, prompt management |
+| Backend | Java 21, Spring Boot 3.3+ | REST API server |
+| LLM Orchestration | LangChain4j | RAG pipeline, prompt management |
 | Vector Database | ChromaDB | Store and search document embeddings |
 | Embeddings | OpenAI `text-embedding-3-small` or HuggingFace | Convert text to vectors |
 | LLM | OpenAI GPT-4o / Anthropic Claude | Generate responses |
-| Frontend | React 18 + TypeScript | Chat interface |
-| Styling | Tailwind CSS | UI styling |
-| Database | SQLite (dev) / PostgreSQL (prod) | Conversation history |
+| Frontend | Angular 18+, TypeScript | Chat interface |
+| Styling | Angular Material + Tailwind CSS | UI components & styling |
+| Database | H2 (dev) / PostgreSQL (prod) | Conversation history |
+| Build Tool | Maven | Backend build & dependency management |
 | Containerization | Docker + Docker Compose | Consistent environments |
-| Testing | pytest, React Testing Library | Unit & integration tests |
+| Testing | JUnit 5, Mockito, Jasmine/Karma | Unit & integration tests |
 
 ---
 
@@ -69,54 +89,93 @@ Legal Documents ──▶ Ingestion Script ──▶ Chunks ──▶ Embeddings
 ```
 Legal-AI-Assistance/
 ├── backend/
-│   ├── app/
-│   │   ├── __init__.py
-│   │   ├── main.py                 # FastAPI entry point
-│   │   ├── config.py               # Environment config
-│   │   ├── routes/
-│   │   │   ├── __init__.py
-│   │   │   ├── chat.py             # Chat endpoints
-│   │   │   └── documents.py        # Document management endpoints
-│   │   ├── services/
-│   │   │   ├── __init__.py
-│   │   │   ├── llm_service.py      # LLM provider integration
-│   │   │   ├── rag_service.py      # RAG pipeline logic
-│   │   │   └── history_service.py  # Conversation history
-│   │   ├── models/
-│   │   │   ├── __init__.py
-│   │   │   └── schemas.py          # Pydantic request/response models
-│   │   └── prompts/
-│   │       └── legal_prompt.py     # System prompts & templates
-│   ├── requirements.txt
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/com/legalai/
+│   │   │   │   ├── LegalAiApplication.java         # Spring Boot entry point
+│   │   │   │   ├── config/
+│   │   │   │   │   ├── LlmConfig.java              # LLM provider beans
+│   │   │   │   │   ├── ChromaConfig.java            # ChromaDB connection
+│   │   │   │   │   └── CorsConfig.java              # CORS for Angular dev
+│   │   │   │   ├── controller/
+│   │   │   │   │   ├── ChatController.java          # Chat REST endpoints
+│   │   │   │   │   └── DocumentController.java      # Document management endpoints
+│   │   │   │   ├── service/
+│   │   │   │   │   ├── LlmService.java              # LLM provider integration
+│   │   │   │   │   ├── RagService.java              # RAG pipeline logic
+│   │   │   │   │   ├── IngestionService.java        # Document ingestion
+│   │   │   │   │   └── ConversationService.java     # Conversation history
+│   │   │   │   ├── model/
+│   │   │   │   │   ├── dto/
+│   │   │   │   │   │   ├── ChatRequest.java         # Request DTO
+│   │   │   │   │   │   └── ChatResponse.java        # Response DTO
+│   │   │   │   │   └── entity/
+│   │   │   │   │       ├── Conversation.java        # JPA entity
+│   │   │   │   │       └── Message.java             # JPA entity
+│   │   │   │   └── repository/
+│   │   │   │       ├── ConversationRepository.java
+│   │   │   │       └── MessageRepository.java
+│   │   │   └── resources/
+│   │   │       ├── application.yml                  # Main config
+│   │   │       ├── application-dev.yml              # Dev profile
+│   │   │       └── prompts/
+│   │   │           └── legal-system-prompt.txt      # System prompt template
+│   │   └── test/
+│   │       └── java/com/legalai/
+│   │           ├── controller/
+│   │           │   └── ChatControllerTest.java
+│   │           └── service/
+│   │               ├── RagServiceTest.java
+│   │               └── LlmServiceTest.java
+│   ├── pom.xml
 │   └── Dockerfile
 ├── frontend/
 │   ├── src/
-│   │   ├── components/
-│   │   │   ├── ChatWindow.tsx      # Main chat component
-│   │   │   ├── MessageBubble.tsx   # Individual message display
-│   │   │   ├── SourceCard.tsx      # Legal source citations
-│   │   │   └── Disclaimer.tsx      # Legal disclaimer banner
-│   │   ├── services/
-│   │   │   └── api.ts              # Backend API client
-│   │   ├── App.tsx
-│   │   └── main.tsx
+│   │   ├── app/
+│   │   │   ├── app.component.ts
+│   │   │   ├── app.config.ts
+│   │   │   ├── app.routes.ts
+│   │   │   ├── components/
+│   │   │   │   ├── chat-window/
+│   │   │   │   │   ├── chat-window.component.ts
+│   │   │   │   │   ├── chat-window.component.html
+│   │   │   │   │   ├── chat-window.component.scss
+│   │   │   │   │   └── chat-window.component.spec.ts
+│   │   │   │   ├── message-bubble/
+│   │   │   │   │   ├── message-bubble.component.ts
+│   │   │   │   │   ├── message-bubble.component.html
+│   │   │   │   │   └── message-bubble.component.scss
+│   │   │   │   ├── source-card/
+│   │   │   │   │   ├── source-card.component.ts
+│   │   │   │   │   ├── source-card.component.html
+│   │   │   │   │   └── source-card.component.scss
+│   │   │   │   └── disclaimer/
+│   │   │   │       ├── disclaimer.component.ts
+│   │   │   │       └── disclaimer.component.html
+│   │   │   ├── services/
+│   │   │   │   ├── chat.service.ts
+│   │   │   │   └── document.service.ts
+│   │   │   ├── models/
+│   │   │   │   ├── chat-request.model.ts
+│   │   │   │   └── chat-response.model.ts
+│   │   │   └── environments/
+│   │   │       ├── environment.ts
+│   │   │       └── environment.prod.ts
+│   │   ├── assets/
+│   │   ├── styles.scss
+│   │   ├── index.html
+│   │   └── main.ts
+│   ├── angular.json
 │   ├── package.json
+│   ├── tsconfig.json
 │   └── Dockerfile
 ├── data/
-│   ├── raw/                        # Original legal documents (PDF, TXT, etc.)
-│   ├── processed/                  # Cleaned and chunked documents
-│   └── sources.json                # Metadata about data sources
+│   ├── raw/                            # Original legal documents (PDF, TXT, etc.)
+│   ├── processed/                      # Cleaned and chunked documents
+│   └── sources.json                    # Metadata about data sources
 ├── scripts/
-│   ├── ingest.py                   # Document ingestion pipeline
-│   ├── evaluate.py                 # Response quality evaluation
-│   └── seed_data.py                # Download sample legal data
-├── tests/
-│   ├── backend/
-│   │   ├── test_chat.py
-│   │   ├── test_rag_service.py
-│   │   └── test_llm_service.py
-│   └── frontend/
-│       └── ChatWindow.test.tsx
+│   ├── seed-data.sh                    # Download sample legal data
+│   └── evaluate.py                     # Response quality evaluation
 ├── docker-compose.yml
 ├── .env.example
 ├── .gitignore
@@ -130,9 +189,11 @@ Legal-AI-Assistance/
 
 Ensure every team member has the following installed:
 
-- **Python 3.11+** — `python3 --version`
-- **Node.js 18+** — `node --version`
-- **npm 9+** — `npm --version`
+- **Java 21** — `java --version`
+- **Maven 3.9+** — `mvn --version`
+- **Node.js 20+** — `node --version`
+- **npm 10+** — `npm --version`
+- **Angular CLI 18+** — `ng version` (install: `npm install -g @angular/cli`)
 - **Docker & Docker Compose** — `docker --version`
 - **Git** — `git --version`
 - **An LLM API key** (OpenAI or Anthropic)
@@ -154,7 +215,7 @@ cd Legal-AI-Assistance
 cp .env.example .env
 ```
 
-Edit `.env` with your API keys:
+Edit `.env` with your API keys (these get mapped to `application.yml` or Docker env):
 
 ```env
 # LLM Configuration
@@ -162,37 +223,34 @@ OPENAI_API_KEY=sk-your-openai-key-here
 # OR
 ANTHROPIC_API_KEY=sk-ant-your-anthropic-key-here
 
-# App Configuration
-LLM_PROVIDER=openai          # openai or anthropic
-LLM_MODEL=gpt-4o             # or claude-sonnet-4-20250514
+LLM_PROVIDER=openai
+LLM_MODEL=gpt-4o
 EMBEDDING_MODEL=text-embedding-3-small
 
-# Backend
-BACKEND_HOST=0.0.0.0
-BACKEND_PORT=8000
-CHROMA_PERSIST_DIR=./data/chromadb
+# Database
+SPRING_DATASOURCE_URL=jdbc:h2:file:./data/legalai-db
+SPRING_DATASOURCE_USERNAME=sa
+SPRING_DATASOURCE_PASSWORD=
 
-# Frontend
-VITE_API_URL=http://localhost:8000
+# ChromaDB
+CHROMA_HOST=localhost
+CHROMA_PORT=8001
 ```
 
 ### 3. Backend Setup (Person 1)
 
 ```bash
-# Create virtual environment
 cd backend
-python3 -m venv venv
-source venv/bin/activate
 
-# Install dependencies
-pip install -r requirements.txt
+# Build the project
+mvn clean install -DskipTests
 
-# Run the server
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+# Run with dev profile
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-Backend will be available at: `http://localhost:8000`
-API docs at: `http://localhost:8000/docs`
+Backend will be available at: `http://localhost:8080`
+Swagger UI at: `http://localhost:8080/swagger-ui.html`
 
 ### 4. Frontend Setup (Person 2)
 
@@ -202,33 +260,43 @@ cd frontend
 # Install dependencies
 npm install
 
-# Start dev server
-npm run dev
+# Start Angular dev server with proxy to backend
+ng serve --proxy-config proxy.conf.json
 ```
 
-Frontend will be available at: `http://localhost:5173`
+Frontend will be available at: `http://localhost:4200`
 
-### 5. Data Ingestion (Person 3)
+### 5. ChromaDB Setup (Person 3)
 
 ```bash
-# Activate backend venv
-source backend/venv/bin/activate
-
-# Place legal documents in data/raw/
-# Then run ingestion
-python scripts/ingest.py --input-dir data/raw --output-dir data/processed
+# Start ChromaDB using Docker
+docker run -d --name chromadb \
+  -p 8001:8000 \
+  -v ./data/chromadb:/chroma/chroma \
+  chromadb/chroma:latest
 ```
 
-### 6. Run Everything with Docker (Recommended)
+### 6. Data Ingestion (Person 3)
+
+```bash
+# Place legal documents in data/raw/
+# Then trigger ingestion via API
+curl -X POST http://localhost:8080/api/documents/ingest \
+  -H "Content-Type: application/json" \
+  -d '{"sourceDirectory": "data/raw"}'
+```
+
+### 7. Run Everything with Docker (Recommended)
 
 ```bash
 docker-compose up --build
 ```
 
 This starts:
-- Backend on `http://localhost:8000`
-- Frontend on `http://localhost:3000`
+- Backend on `http://localhost:8080`
+- Frontend on `http://localhost:4200`
 - ChromaDB on `http://localhost:8001`
+- PostgreSQL on `http://localhost:5432`
 
 ---
 
@@ -274,6 +342,21 @@ test:     Adding tests
 chore:    Maintenance tasks
 ```
 
+### Angular Proxy Config (for dev)
+
+Create this file so the Angular dev server proxies API calls to Spring Boot:
+
+```json
+// frontend/proxy.conf.json
+{
+  "/api": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "changeOrigin": true
+  }
+}
+```
+
 ---
 
 ## 📡 API Endpoints
@@ -281,19 +364,20 @@ chore:    Maintenance tasks
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/api/chat` | Send a message and get a response |
-| `GET`  | `/api/chat/{conversation_id}/history` | Get conversation history |
+| `GET`  | `/api/chat/{conversationId}/history` | Get conversation history |
 | `POST` | `/api/documents/upload` | Upload a legal document |
+| `POST` | `/api/documents/ingest` | Trigger ingestion of documents |
 | `GET`  | `/api/documents` | List all ingested documents |
-| `GET`  | `/api/health` | Health check |
+| `GET`  | `/actuator/health` | Health check (Spring Actuator) |
 
 ### Example: Chat Request
 
 ```bash
-curl -X POST http://localhost:8000/api/chat \
+curl -X POST http://localhost:8080/api/chat \
   -H "Content-Type: application/json" \
   -d '{
     "message": "What are my rights as a tenant if my landlord refuses repairs?",
-    "conversation_id": "conv_123"
+    "conversationId": "conv_123"
   }'
 ```
 
@@ -305,10 +389,10 @@ curl -X POST http://localhost:8000/api/chat \
   "sources": [
     {
       "document": "Tenant Rights Act - Section 42",
-      "relevance_score": 0.92
+      "relevanceScore": 0.92
     }
   ],
-  "conversation_id": "conv_123",
+  "conversationId": "conv_123",
   "disclaimer": "This is legal information, not legal advice. Consult an attorney for your specific situation."
 }
 ```
@@ -330,36 +414,43 @@ curl -X POST http://localhost:8000/api/chat \
 - Government legal aid websites
 - Public domain legal FAQs
 
-### Ingestion Pipeline
+### Ingestion via REST API
 
 ```bash
-# Ingest all documents from data/raw/
-python scripts/ingest.py --input-dir data/raw
+# Upload a single document
+curl -X POST http://localhost:8080/api/documents/upload \
+  -F "file=@data/raw/tenant_rights.pdf" \
+  -F "category=tenant-law"
 
-# Ingest a single file
-python scripts/ingest.py --file data/raw/tenant_rights.pdf
+# Ingest a full directory
+curl -X POST http://localhost:8080/api/documents/ingest \
+  -H "Content-Type: application/json" \
+  -d '{"sourceDirectory": "data/raw"}'
 
 # Check ingestion status
-python scripts/ingest.py --status
+curl http://localhost:8080/api/documents/status
 ```
 
 ---
 
 ## 🧪 Testing
 
-### Backend Tests
+### Backend Tests (JUnit 5 + Mockito)
 
 ```bash
 cd backend
-source venv/bin/activate
-pytest tests/ -v --cov=app
+mvn test                         # Run all tests
+mvn test -Dtest=ChatControllerTest   # Run specific test class
+mvn verify                       # Run integration tests
 ```
 
-### Frontend Tests
+### Frontend Tests (Jasmine + Karma)
 
 ```bash
 cd frontend
-npm run test
+ng test                          # Run unit tests with Karma
+ng test --code-coverage          # With coverage report
+ng e2e                           # End-to-end tests (if configured)
 ```
 
 ### Run All Tests
@@ -376,10 +467,11 @@ make test
 
 ```bash
 # Build and start all services
-docker-compose -f docker-compose.yml up -d --build
+docker-compose up -d --build
 
 # View logs
-docker-compose logs -f
+docker-compose logs -f backend
+docker-compose logs -f frontend
 
 # Stop services
 docker-compose down
@@ -388,13 +480,15 @@ docker-compose down
 ### Environment Checklist for Production
 
 - [ ] Set strong API keys in `.env`
-- [ ] Enable HTTPS
-- [ ] Set `DEBUG=false`
+- [ ] Enable HTTPS (reverse proxy with Nginx/Traefik)
+- [ ] Set `spring.profiles.active=prod`
 - [ ] Configure CORS for your domain only
-- [ ] Set up rate limiting
-- [ ] Enable logging and monitoring
+- [ ] Set up rate limiting (Spring Boot filter or API gateway)
+- [ ] Switch to PostgreSQL from H2
+- [ ] Enable logging and monitoring (Spring Actuator + Prometheus)
 - [ ] Add legal disclaimer to all responses
 - [ ] Review data privacy compliance (GDPR, etc.)
+- [ ] Angular production build with `ng build --configuration production`
 
 ---
 
@@ -405,7 +499,9 @@ docker-compose down
 3. **Write tests for new features**
 4. **Update this README if you change setup steps**
 5. **Keep `.env` out of git** (it's in `.gitignore`)
-6. **Document your code** — use docstrings and type hints
+6. **Follow Java naming conventions** and **Angular style guide**
+7. **Use Javadoc** for public service methods
+8. **Use TypeScript strict mode** in frontend
 
 ---
 
@@ -413,31 +509,31 @@ docker-compose down
 
 ### Phase 1 — MVP (Weeks 1–3)
 - [x] Project setup & README
-- [ ] Basic FastAPI backend with chat endpoint
-- [ ] RAG pipeline with ChromaDB
-- [ ] Document ingestion script
-- [ ] Simple React chat UI
+- [ ] Spring Boot backend with chat endpoint
+- [ ] LangChain4j RAG pipeline with ChromaDB
+- [ ] Document ingestion service
+- [ ] Angular chat UI with Angular Material
 - [ ] Legal disclaimer on all responses
 
 ### Phase 2 — Core Features (Weeks 4–6)
-- [ ] Conversation history & context
-- [ ] Source citation display in UI
+- [ ] Conversation history & context (JPA + PostgreSQL)
+- [ ] Source citation display in Angular UI
 - [ ] Multi-document type ingestion (PDF, DOCX)
 - [ ] Prompt engineering for legal accuracy
-- [ ] Basic test suite
+- [ ] JUnit + Angular test suites
 
 ### Phase 3 — Polish & Deploy (Weeks 7–8)
 - [ ] Docker Compose deployment
 - [ ] Response quality evaluation
-- [ ] Rate limiting & error handling
-- [ ] UI/UX improvements
-- [ ] CI/CD pipeline
+- [ ] Rate limiting & global exception handling
+- [ ] UI/UX improvements (loading states, error handling)
+- [ ] CI/CD pipeline (GitHub Actions)
 
 ### Phase 4 — Stretch Goals
 - [ ] Multi-language support
-- [ ] Voice input
+- [ ] WebSocket for streaming responses
 - [ ] Document drafting assistance
-- [ ] User authentication
+- [ ] User authentication (Spring Security + JWT)
 - [ ] Analytics dashboard
 
 ---

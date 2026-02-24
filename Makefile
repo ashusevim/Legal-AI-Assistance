@@ -1,41 +1,42 @@
-.PHONY: setup backend frontend ingest test docker-up docker-down clean
+.PHONY: setup backend frontend test docker-up docker-down clean
 
-# Full setup
+# === Full Setup ===
 setup: setup-backend setup-frontend
 
 setup-backend:
-    cd backend && python3 -m venv venv && . venv/bin/activate && pip install -r requirements.txt
+    cd backend && mvn clean install -DskipTests
 
 setup-frontend:
     cd frontend && npm install
 
-# Run services
+# === Run Services ===
 backend:
-    cd backend && . venv/bin/activate && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+    cd backend && mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
 frontend:
-    cd frontend && npm run dev
+    cd frontend && ng serve --proxy-config proxy.conf.json
 
-# Data
-ingest:
-    cd backend && . venv/bin/activate && python ../scripts/ingest.py --input-dir ../data/raw
+# === ChromaDB ===
+chromadb:
+    docker run -d --name chromadb -p 8001:8000 -v ./data/chromadb:/chroma/chroma chromadb/chroma:latest
 
-# Testing
+# === Testing ===
 test: test-backend test-frontend
 
 test-backend:
-    cd backend && . venv/bin/activate && pytest tests/ -v --cov=app
+    cd backend && mvn test
 
 test-frontend:
-    cd frontend && npm run test
+    cd frontend && ng test --watch=false --browsers=ChromeHeadless
 
-# Docker
+# === Docker ===
 docker-up:
     docker-compose up --build -d
 
 docker-down:
     docker-compose down
 
-# Cleanup
+# === Cleanup ===
 clean:
-    rm -rf backend/venv frontend/node_modules data/chromadb __pycache__
+    cd backend && mvn clean
+    rm -rf frontend/node_modules frontend/dist frontend/.angular data/chromadb

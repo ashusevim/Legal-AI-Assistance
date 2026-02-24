@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: legal-ai-assistance
+
+  datasource:
+    url: jdbc:h2:file:./data/legalai-db
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+server:
+  port: 8080
+
+# LLM Configuration
+legalai:
+  llm:
+    provider: ${LLM_PROVIDER:openai}
+    model: ${LLM_MODEL:gpt-4o}
+    api-key: ${OPENAI_API_KEY:}
+    embedding-model: ${EMBEDDING_MODEL:text-embedding-3-small}
+  chroma:
+    host: ${CHROMA_HOST:localhost}
+    port: ${CHROMA_PORT:8001}
+    collection-name: legal-documents
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+# Swagger
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html

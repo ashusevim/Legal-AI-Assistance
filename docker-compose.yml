@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - LLM_PROVIDER=${LLM_PROVIDER:-openai}
+      - LLM_MODEL=${LLM_MODEL:-gpt-4o}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-text-embedding-3-small}
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/legalai
+      - SPRING_DATASOURCE_USERNAME=legalai
+      - SPRING_DATASOURCE_PASSWORD=legalai_secret
+    depends_on:
+      - chromadb
+      - postgres
+    volumes:
+      - ./data:/app/data
+    networks:
+      - legalai-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    networks:
+      - legalai-network
+
+  chromadb:
+    image: chromadb/chroma:latest
+    ports:
+      - "8001:8000"
+    volumes:
+      - chromadb-data:/chroma/chroma
+    networks:
+      - legalai-network
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=legalai
+      - POSTGRES_USER=legalai
+      - POSTGRES_PASSWORD=legalai_secret
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - legalai-network
+
+volumes:
+  chromadb-data:
+  postgres-data:
+
+networks:
+  legalai-network:
+    driver: bridge

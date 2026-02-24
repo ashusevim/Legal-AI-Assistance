@@ -30,3 +30,39 @@ docker-compose.override.yml
 
 # Build
 frontend/dist/
+
+# === Java / Maven ===
+backend/target/
+*.class
+*.jar
+*.war
+*.log
+.mvn/wrapper/maven-wrapper.jar
+
+# === Spring Boot ===
+backend/data/legalai-db*
+
+# === Angular / Node ===
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# === Environment ===
+.env
+
+# === ChromaDB ===
+data/chromadb/
+
+# === IDE ===
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === Docker ===
+docker-compose.override.yml
